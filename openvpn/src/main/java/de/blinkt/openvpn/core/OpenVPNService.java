@@ -142,6 +142,14 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
     private Toast mlastToast;
     private Runnable mOpenVPNThread;
 
+        // Хелпер: совместимый флаг для PendingIntent
+    private static int piFlags() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+            ? PendingIntent.FLAG_IMMUTABLE
+            : 0;
+    }
+
+
     // From: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
     public static String humanReadableByteCount(long bytes, boolean speed, Resources res) {
         if (speed)
@@ -279,7 +287,7 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
         nbuilder.setSmallIcon(icon);
         if (status == LEVEL_WAITING_FOR_USER_INPUT) {
-            PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
+            PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE);
             nbuilder.setContentIntent(pIntent);
         } else {
             nbuilder.setContentIntent(getGraphPendingIntent());
@@ -407,7 +415,7 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
     private void addVpnActionsToNotification(NotificationCompat.Builder nbuilder) {
         Intent disconnectVPN = new Intent(this, DisconnectVPN.class);
         disconnectVPN.setAction(DISCONNECT_VPN);
-        PendingIntent disconnectPendingIntent = PendingIntent.getActivity(this, 0, disconnectVPN, 0);
+        PendingIntent disconnectPendingIntent = PendingIntent.getActivity(this, 0, disconnectVPN, FLAG_IMMUTABLE);
 
         nbuilder.addAction(R.drawable.ic_menu_close_clear_cancel,
                 getString(R.string.ovpn_cancel_connection), disconnectPendingIntent);
@@ -415,13 +423,13 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
         Intent pauseVPN = new Intent(this, OpenVPNService.class);
         if (mDeviceStateReceiver == null || !mDeviceStateReceiver.isUserPaused()) {
             pauseVPN.setAction(PAUSE_VPN);
-            PendingIntent pauseVPNPending = PendingIntent.getService(this, 0, pauseVPN, 0);
+            PendingIntent pauseVPNPending = PendingIntent.getService(this, 0, pauseVPN, FLAG_IMMUTABLE);
             nbuilder.addAction(R.drawable.ic_menu_pause,
                     getString(R.string.ovpn_pauseVPN), pauseVPNPending);
 
         } else {
             pauseVPN.setAction(RESUME_VPN);
-            PendingIntent resumeVPNPending = PendingIntent.getService(this, 0, pauseVPN, 0);
+            PendingIntent resumeVPNPending = PendingIntent.getService(this, 0, pauseVPN, FLAG_IMMUTABLE);
             nbuilder.addAction(R.drawable.ic_menu_play,
                     getString(R.string.ovpn_resumevpn), resumeVPNPending);
         }
@@ -433,7 +441,7 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
         intent.putExtra("need", needed);
         Bundle b = new Bundle();
         b.putString("need", needed);
-        PendingIntent pIntent = PendingIntent.getActivity(this, 12, intent, 0);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 12, intent, FLAG_IMMUTABLE);
         return pIntent;
     }
 
@@ -1316,7 +1324,7 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
         // updateStateString trigger the notification of the VPN to be refreshed, save this intent
         // to have that notification also this intent to be set
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE);
         VpnStatus.updateStateString("USER_INPUT", "waiting for user input", reason, LEVEL_WAITING_FOR_USER_INPUT, intent);
         nbuilder.setContentIntent(pIntent);
 
